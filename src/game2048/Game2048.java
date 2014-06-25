@@ -1,8 +1,3 @@
-/*
-	COMMENTO INUTILE PRIMO COMMIT PUSH PULL ECCETERA
-
-*/
-
 package game2048;
 
 import java.util.logging.Logger;
