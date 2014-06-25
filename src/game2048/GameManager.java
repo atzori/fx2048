@@ -37,6 +37,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+import giocatoreAutomatico.Griglia;
+
 /**
  *
  * @author bruno
@@ -556,5 +558,33 @@ public class GameManager extends Group {
             // not session found, restart again
             resetGame();
         }
+    }
+    
+    public Griglia getGriglia ()
+    {
+        Griglia grid = new MyGriglia();
+
+        synchronized (gameGrid)
+        {
+            for (Map.Entry<Location, Tile> entry: this.gameGrid.entrySet())
+            {
+                grid.put(
+                        entry.getKey(),
+                        (entry.getValue() != null) ? entry.getValue().getValue() : -1
+                );
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Restituisce true se la partita è finita, false se si sta giocando.
+     */
+    public boolean isGameOver() {
+        return gameOverProperty.get();
+    }
+    
+    private class MyGriglia extends HashMap<Location, Integer> implements Griglia
+    {
     }
 }
