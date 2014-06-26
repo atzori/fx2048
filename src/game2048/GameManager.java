@@ -74,6 +74,11 @@ public class GameManager extends Group {
     private final Label lblPoints = new Label();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
+    
+    /* AGGIUNGO TRE VARIABILI: PUNTEGGIO, VALORE, MOSSE MASSIMI */
+    private int maxScore;
+    private int maxValue;
+    private int maxMoves;
 
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
@@ -92,6 +97,11 @@ public class GameManager extends Group {
         initializeGrid();
 
         this.setManaged(false);
+        
+        /* INIZIALIZZO LE TRE VARIABILI CREATE (superfluo): */
+        this.maxScore = 0;
+        this.maxValue = 0;
+        this.maxMoves = 0;
     }
 
     public void move(Direction direction) {
@@ -123,6 +133,8 @@ public class GameManager extends Group {
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
 
+                this.maxMoves++;
+                
                 gameGrid.put(nextLocation, tileToBeMerged);
                 gameGrid.replace(tile.getLocation(), null);
 
@@ -134,12 +146,15 @@ public class GameManager extends Group {
                 gameScoreProperty.set(gameScoreProperty.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
+                    /* AGGIORNO LE VARIABILI CONTATRICI */
+                    this.maxScore = gameScoreProperty.get();
+                    this.maxValue = FINAL_VALUE_TO_WIN;
                     gameWonProperty.set(true);
                 }
                 return 1;
             } else if (farthestLocation.equals(tile.getLocation()) == false) {
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
-
+           
                 gameGrid.put(farthestLocation, tile);
                 gameGrid.replace(tile.getLocation(), null);
 
@@ -165,6 +180,8 @@ public class GameManager extends Group {
             // game is over if there is no more moves
             Location randomAvailableLocation = findRandomAvailableLocation();
             if (randomAvailableLocation == null && !mergeMovementsAvailable()) {
+                this.maxValue = maxValue();
+                this.maxScore = gameScoreProperty.get();
                 gameOverProperty.set(true);
             } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
                 addAndAnimateRandomTile(randomAvailableLocation);
@@ -509,6 +526,8 @@ public class GameManager extends Group {
     // after last movement on full grid, check if there are movements available
     private EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+            this.maxValue = maxValue();
+            this.maxScore = gameScoreProperty.get();
             this.gameOverProperty.set(true);
         }
     };
@@ -556,5 +575,31 @@ public class GameManager extends Group {
             // not session found, restart again
             resetGame();
         }
+    }
+    
+    /* AGGIUNGO IL METODO MAX_VALUE */
+    public int maxValue(){
+        for (int x=0; x<gridSize; x++)
+            for (int y=0; y<gridSize; y++){
+                Tile tile = gameGrid.get(new Location(x,y));
+                if (tile.getValue() > this.maxValue )
+                    this.maxValue = tile.getValue();
+            }
+        return this.maxValue;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_VALUE */
+    public int getMaxValue(){
+        return this.maxValue;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_SCORE */
+    public int getMaxScore(){
+        return this.maxScore;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_MOVES */
+    public int getMaxMoves(){
+        return this.maxMoves;
     }
 }
