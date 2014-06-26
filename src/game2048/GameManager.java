@@ -37,6 +37,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+import giocatoreAutomatico.Griglia;
+
 /**
  *
  * @author bruno
@@ -57,6 +59,11 @@ public class GameManager extends Group {
     private final List<Integer> traversalY;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
+    
+    /**/
+    private final BooleanProperty AutomaticPlayerProperty = new SimpleBooleanProperty(false);
+    /**/
+    
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
@@ -92,6 +99,7 @@ public class GameManager extends Group {
 
         createScore();
         createGrid();
+        scegliGiocatore();
         initGameProperties();
 
         initializeGrid();
@@ -602,4 +610,73 @@ public class GameManager extends Group {
     public int getMaxMoves(){
         return this.maxMoves;
     }
+        
+    public Griglia getGriglia ()
+    {
+        Griglia grid = new MyGriglia();
+
+        synchronized (gameGrid)
+        {
+            for (Map.Entry<Location, Tile> entry: this.gameGrid.entrySet())
+            {
+                grid.put(
+                        entry.getKey(),
+                        (entry.getValue() != null) ? entry.getValue().getValue() : -1
+                );
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Restituisce true se la partita è finita, false se si sta giocando.
+     */
+    public boolean isGameOver() {
+        return gameOverProperty.get();
+    }
+    /**
+     * Crea il dialogue per scegliere se giocare manualmente o lasciar giocare il giocatore automatico
+     */
+    public void scegliGiocatore(){
+		layerOnProperty.set(true);
+		hOvrLabel.getStyleClass().setAll("over");
+		hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+		Label lblSceltaGiocatore = new Label("Who plays?");
+		lblSceltaGiocatore.getStyleClass().add("lblOver"); 
+		hOvrLabel.setAlignment(Pos.CENTER);
+		hOvrLabel.getChildren().setAll(lblSceltaGiocatore);
+		hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
+		this.getChildren().add(hOvrLabel);
+		
+		hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+		hOvrButton.setSpacing(30);
+		
+		Button bHumanPlayer = new Button("Human\nPlayer");
+		bHumanPlayer.getStyleClass().add("try");
+		
+		bHumanPlayer.setOnAction(e -> {
+			AutomaticPlayerProperty.set(false);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+		
+		Button bAutomaticPlayer = new Button("Automatic\nPlayer");
+		bAutomaticPlayer.getStyleClass().add("try");
+		
+		//bAutomaticPlayer.setOnTouchPressed(e -> resetGame());
+		//bAutomaticPlayer.setOnAction(e -> resetGame());
+		bAutomaticPlayer.setOnAction(e -> {
+			AutomaticPlayerProperty.set(true);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+		
+		hOvrButton.setAlignment(Pos.CENTER);
+		hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer);
+		hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
+		this.getChildren().add(hOvrButton);
+		
+	}
+    
+    private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
 }
