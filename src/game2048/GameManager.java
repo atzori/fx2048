@@ -59,11 +59,7 @@ public class GameManager extends Group {
     private final List<Integer> traversalY;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
-    
-    /**/
-    private final BooleanProperty AutomaticPlayerProperty = new SimpleBooleanProperty(false);
-    /**/
-    
+    private final BooleanProperty automaticPlayerProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
@@ -634,9 +630,18 @@ public class GameManager extends Group {
     public boolean isGameOver() {
         return gameOverProperty.get();
     }
+    
+    
+    /**
+     * Restituisce true se si è deciso di lasciar giocare il giocatore automatico
+     *
+    **/
+    public boolean isAutomaticPlayerSet(){
+		return automaticPlayerProperty.get();
+    }
     /**
      * Crea il dialogue per scegliere se giocare manualmente o lasciar giocare il giocatore automatico
-     */
+     **/
     public void scegliGiocatore(){
 		layerOnProperty.set(true);
 		hOvrLabel.getStyleClass().setAll("over");
@@ -655,7 +660,7 @@ public class GameManager extends Group {
 		bHumanPlayer.getStyleClass().add("try");
 		
 		bHumanPlayer.setOnAction(e -> {
-			AutomaticPlayerProperty.set(false);
+			automaticPlayerProperty.set(false);
 			layerOnProperty.set(false);
 			resetGame();
 		});
@@ -666,7 +671,7 @@ public class GameManager extends Group {
 		//bAutomaticPlayer.setOnTouchPressed(e -> resetGame());
 		//bAutomaticPlayer.setOnAction(e -> resetGame());
 		bAutomaticPlayer.setOnAction(e -> {
-			AutomaticPlayerProperty.set(true);
+			automaticPlayerProperty.set(true);
 			layerOnProperty.set(false);
 			resetGame();
 		});
