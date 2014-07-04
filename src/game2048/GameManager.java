@@ -52,6 +52,7 @@ public class GameManager extends Group {
     // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
     private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
+    private static final int PLAYS_NUMBER = 10;
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
@@ -67,7 +68,9 @@ public class GameManager extends Group {
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
     private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
-
+    
+    private static List<Tripla> statistics = new ArrayList<Tripla>();
+    
     // User Interface controls
     private final VBox vGame = new VBox(50);
     private final Group gridGroup = new Group();
@@ -150,9 +153,11 @@ public class GameManager extends Group {
                 gameScoreProperty.set(gameScoreProperty.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                    /* AGGIORNO LE VARIABILI CONTATRICI */
                     this.maxScore = gameScoreProperty.get();
                     this.maxValue = FINAL_VALUE_TO_WIN;
+                    if (statistics.size() <= PLAYS_NUMBER)
+                        statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                                     
                     gameWonProperty.set(true);
                 }
                 return 1;
@@ -532,6 +537,9 @@ public class GameManager extends Group {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
             this.maxValue = maxValue();
             this.maxScore = gameScoreProperty.get();
+            if (statistics.size() <= PLAYS_NUMBER)
+                statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                     
             this.gameOverProperty.set(true);
         }
     };
@@ -684,4 +692,21 @@ public class GameManager extends Group {
 	}
     
     private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
+    
+    private class  Tripla{
+        private int maxScore;
+        private int maxValue;
+        private int maxMoves;
+
+        public Tripla(int maxMoves, int maxScore, int maxValue){
+            this.maxScore = maxScore;
+            this.maxValue = maxValue;
+            this.maxMoves = maxMoves;
+        }
+
+        public int getMaxScore(){ return this.maxScore; }
+        public int getMaxMoves(){ return this.maxMoves; }
+        public int getMaxValue(){ return this.maxValue; }
+    }
+    
 }
