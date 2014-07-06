@@ -37,6 +37,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+import giocatoreAutomatico.Griglia;
+
 /**
  *
  * @author bruno
@@ -50,6 +52,7 @@ public class GameManager extends Group {
     // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
     private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
+    private static final int PLAYS_NUMBER = 10;
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
@@ -57,6 +60,7 @@ public class GameManager extends Group {
     private final List<Integer> traversalY;
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
+    private final BooleanProperty automaticPlayerProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
@@ -64,7 +68,9 @@ public class GameManager extends Group {
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
     private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
-
+    
+    private static List<Tripla> statistics = new ArrayList<Tripla>();
+    
     // User Interface controls
     private final VBox vGame = new VBox(50);
     private final Group gridGroup = new Group();
@@ -74,6 +80,11 @@ public class GameManager extends Group {
     private final Label lblPoints = new Label();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
+    
+    /* AGGIUNGO TRE VARIABILI: PUNTEGGIO, VALORE, MOSSE MASSIMI */
+    private int maxScore;
+    private int maxValue;
+    private int maxMoves;
 
     public GameManager() {
         this(DEFAULT_GRID_SIZE);
@@ -87,11 +98,17 @@ public class GameManager extends Group {
 
         createScore();
         createGrid();
+        scegliGiocatore();
         initGameProperties();
 
         initializeGrid();
 
         this.setManaged(false);
+        
+        /* INIZIALIZZO LE TRE VARIABILI CREATE (superfluo): */
+        this.maxScore = 0;
+        this.maxValue = 0;
+        this.maxMoves = 0;
     }
 
     public void move(Direction direction) {
@@ -123,6 +140,8 @@ public class GameManager extends Group {
             if (tileToBeMerged != null && tileToBeMerged.getValue().equals(tile.getValue()) && !tileToBeMerged.isMerged()) {
                 tileToBeMerged.merge(tile);
 
+                this.maxMoves++;
+                
                 gameGrid.put(nextLocation, tileToBeMerged);
                 gameGrid.replace(tile.getLocation(), null);
 
@@ -134,12 +153,17 @@ public class GameManager extends Group {
                 gameScoreProperty.set(gameScoreProperty.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
+                    this.maxScore = gameScoreProperty.get();
+                    this.maxValue = FINAL_VALUE_TO_WIN;
+                    if (statistics.size() <= PLAYS_NUMBER)
+                        statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                                     
                     gameWonProperty.set(true);
                 }
                 return 1;
             } else if (farthestLocation.equals(tile.getLocation()) == false) {
                 parallelTransition.getChildren().add(animateExistingTile(tile, farthestLocation));
-
+           
                 gameGrid.put(farthestLocation, tile);
                 gameGrid.replace(tile.getLocation(), null);
 
@@ -165,6 +189,8 @@ public class GameManager extends Group {
             // game is over if there is no more moves
             Location randomAvailableLocation = findRandomAvailableLocation();
             if (randomAvailableLocation == null && !mergeMovementsAvailable()) {
+                this.maxValue = maxValue();
+                this.maxScore = gameScoreProperty.get();
                 gameOverProperty.set(true);
             } else if (randomAvailableLocation != null && tilesWereMoved > 0) {
                 addAndAnimateRandomTile(randomAvailableLocation);
@@ -509,6 +535,11 @@ public class GameManager extends Group {
     // after last movement on full grid, check if there are movements available
     private EventHandler<ActionEvent> onFinishNewlyAddedTile = e -> {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
+            this.maxValue = maxValue();
+            this.maxScore = gameScoreProperty.get();
+            if (statistics.size() <= PLAYS_NUMBER)
+                statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                     
             this.gameOverProperty.set(true);
         }
     };
@@ -557,4 +588,125 @@ public class GameManager extends Group {
             resetGame();
         }
     }
+    
+    /* AGGIUNGO IL METODO MAX_VALUE */
+    public int maxValue(){
+        for (int x=0; x<gridSize; x++)
+            for (int y=0; y<gridSize; y++){
+                Tile tile = gameGrid.get(new Location(x,y));
+                if (tile.getValue() > this.maxValue )
+                    this.maxValue = tile.getValue();
+            }
+        return this.maxValue;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_VALUE */
+    public int getMaxValue(){
+        return this.maxValue;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_SCORE */
+    public int getMaxScore(){
+        return this.maxScore;
+    }
+    
+    /* AGGIUNGO METODO GET_MAX_MOVES */
+    public int getMaxMoves(){
+        return this.maxMoves;
+    }
+        
+    public Griglia getGriglia ()
+    {
+        Griglia grid = new MyGriglia();
+
+        synchronized (gameGrid)
+        {
+            for (Map.Entry<Location, Tile> entry: this.gameGrid.entrySet())
+            {
+                grid.put(
+                        entry.getKey(),
+                        (entry.getValue() != null) ? entry.getValue().getValue() : -1
+                );
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Restituisce true se la partita è finita, false se si sta giocando.
+     */
+    public boolean isGameOver() {
+        return gameOverProperty.get();
+    }
+    
+    
+    /**
+     * Restituisce true se si è deciso di lasciar giocare il giocatore automatico
+     *
+    **/
+    public boolean isAutomaticPlayerSet(){
+		return automaticPlayerProperty.get();
+    }
+    /**
+     * Crea il dialogue per scegliere se giocare manualmente o lasciar giocare il giocatore automatico
+     **/
+    public void scegliGiocatore(){
+		layerOnProperty.set(true);
+		hOvrLabel.getStyleClass().setAll("over");
+		hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
+		Label lblSceltaGiocatore = new Label("Who plays?");
+		lblSceltaGiocatore.getStyleClass().add("lblOver"); 
+		hOvrLabel.setAlignment(Pos.CENTER);
+		hOvrLabel.getChildren().setAll(lblSceltaGiocatore);
+		hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
+		this.getChildren().add(hOvrLabel);
+		
+		hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+		hOvrButton.setSpacing(30);
+		
+		Button bHumanPlayer = new Button("Human\nPlayer");
+		bHumanPlayer.getStyleClass().add("try");
+		
+		bHumanPlayer.setOnAction(e -> {
+			automaticPlayerProperty.set(false);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+		
+		Button bAutomaticPlayer = new Button("Automatic\nPlayer");
+		bAutomaticPlayer.getStyleClass().add("try");
+		
+		//bAutomaticPlayer.setOnTouchPressed(e -> resetGame());
+		//bAutomaticPlayer.setOnAction(e -> resetGame());
+		bAutomaticPlayer.setOnAction(e -> {
+			automaticPlayerProperty.set(true);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+		
+		hOvrButton.setAlignment(Pos.CENTER);
+		hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer);
+		hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
+		this.getChildren().add(hOvrButton);
+		
+	}
+    
+    private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
+    
+    private class  Tripla{
+        private int maxScore;
+        private int maxValue;
+        private int maxMoves;
+
+        public Tripla(int maxMoves, int maxScore, int maxValue){
+            this.maxScore = maxScore;
+            this.maxValue = maxValue;
+            this.maxMoves = maxMoves;
+        }
+
+        public int getMaxScore(){ return this.maxScore; }
+        public int getMaxMoves(){ return this.maxMoves; }
+        public int getMaxValue(){ return this.maxValue; }
+    }
+    
 }

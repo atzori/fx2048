@@ -16,7 +16,7 @@ public enum Direction {
         this.x = x;
         this.y = y;
     }
-
+    
     public int getX() {
         return x;
     }
@@ -47,4 +47,28 @@ public enum Direction {
     public static Direction valueFor(KeyCode keyCode) {
         return valueOf(keyCode.name());
     }
+    
+    public static Direction convertiDirezione(int dir)
+    {
+        switch (dir)
+        {
+            case 0:
+                return UP;
+            case 1:
+                return RIGHT;
+            case 2:
+                return DOWN;
+            case 3:
+                return LEFT;
+                
+            /**
+             * Con un'implementazione corretta delle specifiche di
+             * GiocatoreAutomatico non si dovrebbe mai arrivare al default.
+             * 
+             */
+            default:
+                return null;
+        }
+    }
+
 }
