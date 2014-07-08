@@ -81,7 +81,7 @@ public class GameManager extends Group {
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
     
-    /* AGGIUNGO TRE VARIABILI: PUNTEGGIO, VALORE, MOSSE MASSIMI */
+    // Statistic's variables
     private int maxScore;
     private int maxValue;
     private int maxMoves;
@@ -105,7 +105,7 @@ public class GameManager extends Group {
 
         this.setManaged(false);
         
-        /* INIZIALIZZO LE TRE VARIABILI CREATE (superfluo): */
+        // Stat.var inizialization
         this.maxScore = 0;
         this.maxValue = 0;
         this.maxMoves = 0;
@@ -589,7 +589,10 @@ public class GameManager extends Group {
         }
     }
     
-    /* AGGIUNGO IL METODO MAX_VALUE */
+    /*** Metodo che analizza la griglia di gioco corrente per trovare il valore massimo 
+     * @author Claudia
+     * @return Valore intero corrispondente al massimo valore. 
+     */
     public int maxValue(){
         for (int x=0; x<gridSize; x++)
             for (int y=0; y<gridSize; y++){
@@ -600,17 +603,26 @@ public class GameManager extends Group {
         return this.maxValue;
     }
     
-    /* AGGIUNGO METODO GET_MAX_VALUE */
+    /** Metodo getter della variabile maxValue 
+     * @author Claudia
+     * @return Valore intero del valore massimo raggiunto.
+     */
     public int getMaxValue(){
         return this.maxValue;
     }
     
-    /* AGGIUNGO METODO GET_MAX_SCORE */
+    /** Metodo getter della variabile maxScore
+     * @author Claudia
+     * @return Valore intero del massimo punteggio ottenuto.
+     */
     public int getMaxScore(){
         return this.maxScore;
     }
     
-    /* AGGIUNGO METODO GET_MAX_MOVES */
+    /** Metodo getter della variabile maxMoves
+     * @author Claudia
+     * @return Valore intero del numero di mosse.
+     */
     public int getMaxMoves(){
         return this.maxMoves;
     }
@@ -693,6 +705,10 @@ public class GameManager extends Group {
     
     private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
     
+    /** Classe interna necessaria per gestire in un unico oggetto i tre dati.  
+     * @author Claudia
+     * 
+     */
     private class  Tripla{
         private int maxScore;
         private int maxValue;
@@ -703,9 +719,21 @@ public class GameManager extends Group {
             this.maxValue = maxValue;
             this.maxMoves = maxMoves;
         }
-
+        
+        /** Metodo getter della variabile maxScore
+         * @Author Claudia
+         * @return Valore intero del punteggio massimo
+         */
         public int getMaxScore(){ return this.maxScore; }
+        /** Metodo getter della variabile maxMoves
+         * @author Claudia
+         * @return valore intero del numero mosse
+         */
         public int getMaxMoves(){ return this.maxMoves; }
+        /** Metodo getter della variabile maxValue.
+         * @author Claudia
+         * @return Valore intero del valore massimo raggiunto. 
+         */
         public int getMaxValue(){ return this.maxValue; }
     }
     
