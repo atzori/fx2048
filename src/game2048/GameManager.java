@@ -61,6 +61,7 @@ public class GameManager extends Group {
     private final List<Location> locations = new ArrayList<>();
     private final Map<Location, Tile> gameGrid;
     private final BooleanProperty automaticPlayerProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty statisticsVisualizationProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameWonProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty gameOverProperty = new SimpleBooleanProperty(false);
     private final IntegerProperty gameScoreProperty = new SimpleIntegerProperty(0);
@@ -691,13 +692,20 @@ public class GameManager extends Group {
 		hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
 		this.getChildren().add(hOvrLabel);
 		
+                //bottoni per la scelta della modalità di gioco
 		hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
-		hOvrButton.setSpacing(30);
+		hOvrButton.setSpacing(15);
 		
 		Button bHumanPlayer = new Button("Human\nPlayer");
 		bHumanPlayer.getStyleClass().add("try");
 		
 		bHumanPlayer.setOnAction(e -> {
+			automaticPlayerProperty.set(false);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+                
+                bHumanPlayer.setOnTouchPressed(e -> {
 			automaticPlayerProperty.set(false);
 			layerOnProperty.set(false);
 			resetGame();
@@ -717,12 +725,27 @@ public class GameManager extends Group {
 			layerOnProperty.set(false);
 			resetGame();
 		});
+                //bottone per la visualizzazione delle statistiche del giocatore automatico
+                Button statisticsButton = new Button("A.P.\nStatistics");
+		statisticsButton.getStyleClass().add("try");
+		
+		statisticsButton.setOnAction(e -> {
+			automaticPlayerProperty.set(true);
+                        statisticsVisualizationProperty.set(true);
+			layerOnProperty.set(false);
+			resetGame();
+		});
+                statisticsButton.setOnTouchPressed(e -> {
+			automaticPlayerProperty.set(true);
+                        statisticsVisualizationProperty.set(true);
+			layerOnProperty.set(false);
+			resetGame();
+		});
 		
 		hOvrButton.setAlignment(Pos.CENTER);
-		hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer);
+		hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer, statisticsButton);
 		hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
-		this.getChildren().add(hOvrButton);
-		
+		this.getChildren().add(hOvrButton);		
 	}
     
     private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
