@@ -717,22 +717,15 @@ public class GameManager extends Group {
         Button bAutomaticPlayer = new Button("Automatic\nPlayer");
         bAutomaticPlayer.getStyleClass().add("try");
 
-        //bAutomaticPlayer.setOnTouchPressed(e -> resetGame());
-        //bAutomaticPlayer.setOnAction(e -> resetGame());
         bAutomaticPlayer.setOnAction(e -> {
                 automaticPlayerProperty.set(true);
                 layerOnProperty.set(false);
                 resetGame();
         });
         
-        Button bStat =  new Button("Stats");
-        bStat.setOnAction(e -> {
-               clearBox();
-               showStat();        
-        });
-
+        
         hOvrButton.setAlignment(Pos.CENTER);
-        hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer, bStat);
+        hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer);
         hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
         this.getChildren().add(hOvrButton);
     }
@@ -758,7 +751,7 @@ public class GameManager extends Group {
         HBox hOvrDiv = new HBox();
         VBox vOvrScrl = new VBox();
         ScrollPane sp = new ScrollPane();
-        TableView<MatchStat> table = new TableView<>();
+        TableView<Tripla> table = new TableView<>();
         
         //ObservableList data = FXCollections.observableArrayList(data);               DA DECOMMENTARE
         //Tripla maxData = new Tripla();        DA DECOMMENTARE
@@ -797,9 +790,9 @@ public class GameManager extends Group {
         
         TableColumn matchCol = new TableColumn("Partita n.");
         TableColumn param1Col = new TableColumn("V/S");
-        TableColumn<MatchStat, String> param2Col = new TableColumn<>("Punteggio");
-        TableColumn<MatchStat, String> param3Col = new TableColumn<>("Mosse");
-        TableColumn<MatchStat, String> param4Col = new TableColumn<>("Valore raggiunto");
+        TableColumn<Tripla, String> param2Col = new TableColumn<>("Punteggio");
+        TableColumn<Tripla, String> param3Col = new TableColumn<>("Mosse");
+        TableColumn<Tripla, String> param4Col = new TableColumn<>("Valore raggiunto");
         
         matchCol.setMinWidth(GRID_WIDTH / 5);
         param1Col.setMinWidth(GRID_WIDTH / 5);
