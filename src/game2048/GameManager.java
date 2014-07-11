@@ -1,5 +1,6 @@
 package game2048;
 
+import giocatoreAutomatico.Griglia;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -36,8 +38,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-
-import giocatoreAutomatico.Griglia;
 
 /**
  *
@@ -81,6 +81,8 @@ public class GameManager extends Group {
     private final Label lblPoints = new Label();
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
+    private final VBox vButton = new VBox();
+    
     
     // Statistic's variables
     private int maxScore;
@@ -405,7 +407,7 @@ public class GameManager extends Group {
         List<Node> collect = gridGroup.getChildren().filtered(c -> c instanceof Tile).stream().collect(Collectors.toList());
         gridGroup.getChildren().removeAll(collect);
         gameGrid.clear();
-        getChildren().removeAll(hOvrLabel, hOvrButton);
+        getChildren().removeAll(hOvrLabel, hOvrButton, vButton);
 
         layerOnProperty.set(false);
         gameScoreProperty.set(0);
@@ -687,16 +689,22 @@ public class GameManager extends Group {
 		hOvrLabel.setMinSize(GRID_WIDTH, GRID_WIDTH);
 		Label lblSceltaGiocatore = new Label("Who plays?");
 		lblSceltaGiocatore.getStyleClass().add("lblOver"); 
-		hOvrLabel.setAlignment(Pos.CENTER);
+		hOvrLabel.setAlignment(Pos.TOP_CENTER);
+                hOvrLabel.setMargin(lblSceltaGiocatore, new Insets(30, 0, 10, 0));
 		hOvrLabel.getChildren().setAll(lblSceltaGiocatore);
 		hOvrLabel.setTranslateY(TOP_HEIGHT + vGame.getSpacing());
 		this.getChildren().add(hOvrLabel);
-		
-                //bottoni per la scelta della modalità di gioco
-		hOvrButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
-		hOvrButton.setSpacing(15);
-		
-		Button bHumanPlayer = new Button("Human\nPlayer");
+                
+                
+                
+                vButton.setMinSize(GRID_WIDTH, GRID_WIDTH / 2);
+		vButton.setSpacing(30);
+                vButton.setAlignment(Pos.TOP_CENTER);
+                vButton.setPadding(new Insets(0, 150, 10, 150));
+		vButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + (GRID_WIDTH )/ 3);
+                
+                
+		Button bHumanPlayer = new Button("Human Player");
 		bHumanPlayer.getStyleClass().add("try");
 		
 		bHumanPlayer.setOnAction(e -> {
@@ -711,7 +719,7 @@ public class GameManager extends Group {
 			resetGame();
 		});
 		
-		Button bAutomaticPlayer = new Button("Automatic\nPlayer");
+		Button bAutomaticPlayer = new Button("Automatic Player");
 		bAutomaticPlayer.getStyleClass().add("try");
 		
 		bAutomaticPlayer.setOnTouchPressed(e -> {
@@ -725,8 +733,8 @@ public class GameManager extends Group {
 			layerOnProperty.set(false);
 			resetGame();
 		});
-                //bottone per la visualizzazione delle statistiche del giocatore automatico
-                Button statisticsButton = new Button("A.P.\nStatistics");
+                
+                Button statisticsButton = new Button("A.P. Statistics");
 		statisticsButton.getStyleClass().add("try");
 		
 		statisticsButton.setOnAction(e -> {
@@ -741,11 +749,14 @@ public class GameManager extends Group {
 			layerOnProperty.set(false);
 			resetGame();
 		});
-		
-		hOvrButton.setAlignment(Pos.CENTER);
-		hOvrButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer, statisticsButton);
-		hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
-		this.getChildren().add(hOvrButton);		
+
+                vButton.getChildren().setAll(bHumanPlayer, bAutomaticPlayer, statisticsButton);
+                
+		this.getChildren().addAll(vButton);	
+                
+                
+                
+                
 	}
     
     private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
