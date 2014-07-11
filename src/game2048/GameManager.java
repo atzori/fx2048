@@ -58,6 +58,7 @@ public class GameManager extends Group {
     // grid_width=4*cell_size + 2*cell_stroke/2d (14px css)+2*grid_stroke/2d (2 px css)
     private static final int GRID_WIDTH = CELL_SIZE * DEFAULT_GRID_SIZE + BORDER_WIDTH * 2;
     private static final int TOP_HEIGHT = 92;
+    private static final int PLAYS_NUMBER = 10;
 
     private volatile boolean movingTiles = false;
     private final int gridSize;
@@ -73,7 +74,9 @@ public class GameManager extends Group {
     private final Set<Tile> mergedToBeRemoved = new HashSet<>();
     private final ParallelTransition parallelTransition = new ParallelTransition();
     private final BooleanProperty layerOnProperty = new SimpleBooleanProperty(false);
-
+    
+    private static List<Tripla> statistics = new ArrayList<Tripla>();
+    
     // User Interface controls
     private final VBox vGame = new VBox(50);
     private final Group gridGroup = new Group();
@@ -85,7 +88,7 @@ public class GameManager extends Group {
     private final HBox hOvrLabel = new HBox();
     private final HBox hOvrButton = new HBox();
     
-    /* AGGIUNGO TRE VARIABILI: PUNTEGGIO, VALORE, MOSSE MASSIMI */
+    // Statistic's variables
     private int maxScore;
     private int maxValue;
     private int maxMoves;
@@ -109,7 +112,7 @@ public class GameManager extends Group {
 
         this.setManaged(false);
         
-        /* INIZIALIZZO LE TRE VARIABILI CREATE (superfluo): */
+        // Stat.var inizialization
         this.maxScore = 0;
         this.maxValue = 0;
         this.maxMoves = 0;
@@ -161,9 +164,11 @@ public class GameManager extends Group {
                 gameScoreProperty.set(gameScoreProperty.get() + tileToBeMerged.getValue());
 
                 if (tileToBeMerged.getValue() == FINAL_VALUE_TO_WIN) {
-                    /* AGGIORNO LE VARIABILI CONTATRICI */
                     this.maxScore = gameScoreProperty.get();
                     this.maxValue = FINAL_VALUE_TO_WIN;
+                    if (statistics.size() <= PLAYS_NUMBER)
+                        statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                                     
                     gameWonProperty.set(true);
                 }
                 return 1;
@@ -348,8 +353,16 @@ public class GameManager extends Group {
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().setAll("try");
 
-                bTry.setOnTouchPressed(e -> resetGame());
-                bTry.setOnAction(e -> resetGame());
+                bTry.setOnTouchPressed(e -> {
+			layerOnProperty.set(false);
+			resetGame();
+                        scegliGiocatore();
+		});
+                bTry.setOnAction(e -> {
+			layerOnProperty.set(false);
+			resetGame();
+                        scegliGiocatore();
+		});
 
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bTry);
@@ -380,8 +393,16 @@ public class GameManager extends Group {
                 });
                 Button bTry = new Button("Try again");
                 bTry.getStyleClass().add("try");
-                bTry.setOnTouchPressed(e -> resetGame());
-                bTry.setOnAction(e -> resetGame());
+                bTry.setOnTouchPressed(e -> {
+			layerOnProperty.set(false);
+			resetGame();
+                        scegliGiocatore();
+		});
+                bTry.setOnAction(e -> {
+			layerOnProperty.set(false);
+			resetGame();
+                        scegliGiocatore();
+		});
                 hOvrButton.setAlignment(Pos.CENTER);
                 hOvrButton.getChildren().setAll(bContinue, bTry);
                 hOvrButton.setTranslateY(TOP_HEIGHT + vGame.getSpacing() + GRID_WIDTH / 2);
@@ -543,6 +564,9 @@ public class GameManager extends Group {
         if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && !mergeMovementsAvailable()) {
             this.maxValue = maxValue();
             this.maxScore = gameScoreProperty.get();
+            if (statistics.size() <= PLAYS_NUMBER)
+                statistics.add(new Tripla(maxMoves, maxScore, maxValue));
+                     
             this.gameOverProperty.set(true);
         }
     };
@@ -592,7 +616,10 @@ public class GameManager extends Group {
         }
     }
     
-    /* AGGIUNGO IL METODO MAX_VALUE */
+    /*** Metodo che analizza la griglia di gioco corrente per trovare il valore massimo 
+     * @author Claudia
+     * @return Valore intero corrispondente al massimo valore. 
+     */
     public int maxValue(){
         for (int x=0; x<gridSize; x++)
             for (int y=0; y<gridSize; y++){
@@ -603,17 +630,26 @@ public class GameManager extends Group {
         return this.maxValue;
     }
     
-    /* AGGIUNGO METODO GET_MAX_VALUE */
+    /** Metodo getter della variabile maxValue 
+     * @author Claudia
+     * @return Valore intero del valore massimo raggiunto.
+     */
     public int getMaxValue(){
         return this.maxValue;
     }
     
-    /* AGGIUNGO METODO GET_MAX_SCORE */
+    /** Metodo getter della variabile maxScore
+     * @author Claudia
+     * @return Valore intero del massimo punteggio ottenuto.
+     */
     public int getMaxScore(){
         return this.maxScore;
     }
     
-    /* AGGIUNGO METODO GET_MAX_MOVES */
+    /** Metodo getter della variabile maxMoves
+     * @author Claudia
+     * @return Valore intero del numero di mosse.
+     */
     public int getMaxMoves(){
         return this.maxMoves;
     }
@@ -644,13 +680,15 @@ public class GameManager extends Group {
     
     
     /**
+     * @author Annalisa
      * Restituisce true se si è deciso di lasciar giocare il giocatore automatico
-     *
+     * @return true if the user decides to let the authomatic player play; false if the user decides to play.
     **/
     public boolean isAutomaticPlayerSet(){
 		return automaticPlayerProperty.get();
     }
     /**
+     * @author Annalisa
      * Crea il dialogue per scegliere se giocare manualmente o lasciar giocare il giocatore automatico
      **/
     public void scegliGiocatore(){
@@ -804,15 +842,39 @@ public class GameManager extends Group {
     }
     
     private class MyGriglia extends HashMap<Location, Integer> implements Griglia {}
-
     
-    private interface MatchStat {
-        
-        public int getMaxScore();
-        public int getMaxValue();
-        public int getMaxMoves();        
-    }
+    /** Classe interna necessaria per gestire in un unico oggetto i tre dati.  
+     * @author Claudia
+     * 
+     */
+    private class  Tripla{
+        private int maxScore;
+        private int maxValue;
+        private int maxMoves;
 
+        public Tripla(int maxMoves, int maxScore, int maxValue){
+            this.maxScore = maxScore;
+            this.maxValue = maxValue;
+            this.maxMoves = maxMoves;
+        }
+        
+        /** Metodo getter della variabile maxScore
+         * @Author Claudia
+         * @return Valore intero del punteggio massimo
+         */
+        public int getMaxScore(){ return this.maxScore; }
+        /** Metodo getter della variabile maxMoves
+         * @author Claudia
+         * @return valore intero del numero mosse
+         */
+        public int getMaxMoves(){ return this.maxMoves; }
+        /** Metodo getter della variabile maxValue.
+         * @author Claudia
+         * @return Valore intero del valore massimo raggiunto. 
+         */
+        public int getMaxValue(){ return this.maxValue; }
+    }
+    
 }
 
 
