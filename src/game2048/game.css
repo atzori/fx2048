@@ -54,6 +54,8 @@
     -fx-text-fill: #f2b179; // f9f6f2
     -fx-effect: dropshadow( three-pass-box, rgba(243, 215, 116, 1), 10, 0.5, 0, 0 );
 }
+
+
 .over {
     -fx-opacity: 0.6;
     -fx-background-color: #f9f6f2;
@@ -200,4 +202,16 @@
     -fx-background-color: #3c3a32; 
     -fx-background-radius: 3;
     -fx-border-radius: 3;
+}
+
+.hBox {
+    -fx-background-color: #f59563;
+    -fx-background-radius: 3;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+}
+
+.labelStat {
+    -fx-font-size: 30px;
+    -fx-text-fill: #776e65;
 }
